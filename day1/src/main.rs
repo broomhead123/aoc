@@ -6,13 +6,19 @@ use std::{
 fn main() {
     let file = File::open("input.data").unwrap();
     let buf = BufReader::new(file);
-    let mut lines: Vec<String> = buf.lines().map(|l| l.unwrap()).collect();
-    let part2: bool = true;
+    let lines: Vec<String> = buf.lines().map(|l| l.unwrap()).collect();
+    let total_part1 = day1(&lines, false);
+    let total_part2 = day1(&lines, true);
+    println!("Part 1 {}", total_part1);
+    println!("Part 2 {}", total_part2);
+}
+
+fn day1(lines: &[String], part2: bool) -> i32 {
     let nums = [
         "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     ];
 
-    lines = lines
+    let fixed_lines:Vec<String> = lines
         .iter()
         .map(|line| {
             line.replace("oneight", "oneeight")
@@ -24,7 +30,7 @@ fn main() {
         })
         .collect();
 
-    let split: i32 = lines
+    fixed_lines
         .iter()
         .map(|line| {
             let y = Regex::new(r"(one|two|three|four|five|six|seven|eight|nine)|(\d)")
@@ -41,7 +47,22 @@ fn main() {
         })
         .collect::<Vec<i32>>()
         .iter()
-        .sum();
+        .sum()
+}
 
-    print!("{}\n", split);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn part1(){
+        let input = ["ab1bc4jas2five".to_string()];
+        assert_eq!(day1(&input, false), 12);
+    }
+
+    #[test]
+    fn part2(){
+        let input = ["ab1bc4jas2five".to_string()];
+        assert_eq!(day1(&input, true), 15);
+    }
 }
