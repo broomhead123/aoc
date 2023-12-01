@@ -1,40 +1,57 @@
 use regex::Regex;
-use std::{
-    fs::File,
-    io::{prelude::*, BufReader},
-};
+
 fn main() {
-    let file = File::open("input.data").unwrap();
-    let buf = BufReader::new(file);
-    let lines: Vec<String> = buf.lines().map(|l| l.unwrap()).collect();
-    let total_part1 = day1(&lines, false);
-    let total_part2 = day1(&lines, true);
-    println!("Part 1 {}", total_part1);
-    println!("Part 2 {}", total_part2);
+    let file = include_str!("../input.data");
+    let lines: Vec<String> = file.lines().map(|s| s.to_string()).collect();
+    use std::time::Instant;
+    {
+        let now = Instant::now();
+        let total_part1: i32 = day1(&lines, false);
+        println!("Part 1 {}", total_part1);
+        println!("Done in: {:.2?}", now.elapsed());
+    }
+    {
+        let now = Instant::now();
+        let total_part2 = day1(&lines, true);
+        println!("Part 2 {}", total_part2);
+        println!("Done in: {:.2?}", now.elapsed());
+    }
 }
 
 fn day1(lines: &[String], part2: bool) -> i32 {
     let nums = [
         "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     ];
-    // Fixup lines that the later regex can't match due to overlap
-    // this only fixes issues found in my input data
-    let fixed_lines: Vec<String> = lines
-        .iter()
-        .map(|line| {
-            line.replace("oneight", "oneeight")
-                .replace("twone", "twoone")
-                .replace("eightwo", "eighttwo")
-                .replace("sevenine", "sevennine")
-                .replace("fiveight", "fiveeight")
-                .replace("eighthree", "eightthree")
-        })
-        .collect();
+
+    let fixed_lines: Vec<String> = if part2 {
+        // Fixup lines that the later regex can't match due to overlap
+        // this only fixes issues found in my input data
+        lines
+            .iter()
+            .map(|line| {
+                line.replace("oneight", "oneeight")
+                    .replace("twone", "twoone")
+                    .replace("eightwo", "eighttwo")
+                    .replace("sevenine", "sevennine")
+                    .replace("fiveight", "fiveeight")
+                    .replace("eighthree", "eightthree")
+            })
+            .collect()
+    } else {
+        lines.to_vec()
+    };
+
+    let regex = if part2 {
+        Regex::new(r"(one|two|three|four|five|six|seven|eight|nine)|(\d)")
+    } else {
+        Regex::new(r"(\d)")
+    };
 
     fixed_lines
         .iter()
         .map(|line| {
-            let y = Regex::new(r"(one|two|three|four|five|six|seven|eight|nine)|(\d)")
+            let numbers = regex
+                .as_ref()
                 .unwrap()
                 .captures_iter(line)
                 .map(|capture| {
@@ -55,7 +72,7 @@ fn day1(lines: &[String], part2: bool) -> i32 {
                 .filter(|x| *x != 0)
                 .collect::<Vec<_>>();
             // Convert first and last digits into a single value
-            (y.first().unwrap() * 10) + y.last().unwrap()
+            (numbers.first().unwrap() * 10) + numbers.last().unwrap()
         })
         .collect::<Vec<i32>>()
         .iter()
