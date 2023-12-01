@@ -7,7 +7,7 @@ fn main() {
     let file = File::open("input.data").unwrap();
     let buf = BufReader::new(file);
     let mut lines: Vec<String> = buf.lines().map(|l| l.unwrap()).collect();
-
+    let part2: bool = true;
     let nums = [
         "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     ];
@@ -33,10 +33,9 @@ fn main() {
                 .map(|capture| {
                     match capture[0].to_string().parse::<i32>() {
                         Ok(val) => val,
-                        //Err(_) => *nums2.get(&c[0]).unwrap() + 1,
-                        Err(_) => (nums.iter().position(|p| p == &&capture[0])).unwrap() as i32 + 1,
+                        Err(_) => if part2 {(nums.iter().position(|p| p == &&capture[0])).unwrap() as i32 + 1 } else {0},
                     }
-                })
+                }).filter( |x| *x != 0)
                 .collect::<Vec<_>>();
             (y.first().unwrap() * 10) + y.last().unwrap()
         })
@@ -44,5 +43,5 @@ fn main() {
         .iter()
         .sum();
 
-    print!("{}", split);
+    print!("{}\n", split);
 }
