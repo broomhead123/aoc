@@ -17,8 +17,9 @@ fn day1(lines: &[String], part2: bool) -> i32 {
     let nums = [
         "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     ];
-
-    let fixed_lines:Vec<String> = lines
+    // Fixup lines that the later regex can't match due to overlap
+    // this only fixes issues found in my input data
+    let fixed_lines: Vec<String> = lines
         .iter()
         .map(|line| {
             line.replace("oneight", "oneeight")
@@ -37,12 +38,23 @@ fn day1(lines: &[String], part2: bool) -> i32 {
                 .unwrap()
                 .captures_iter(line)
                 .map(|capture| {
+                    // For all captured string either diretly convert to a i32
+                    // or if doing part2 lookup the string in nums and return the index + 1
+                    // to get the i32 equivalent
                     match capture[0].to_string().parse::<i32>() {
                         Ok(val) => val,
-                        Err(_) => if part2 {(nums.iter().position(|p| p == &&capture[0])).unwrap() as i32 + 1 } else {0},
+                        Err(_) => {
+                            if part2 {
+                                (nums.iter().position(|p| p == &&capture[0])).unwrap() as i32 + 1
+                            } else {
+                                0 // 0 for part1, these will are filtered out later
+                            }
+                        }
                     }
-                }).filter( |x| *x != 0)
+                })
+                .filter(|x| *x != 0)
                 .collect::<Vec<_>>();
+            // Convert first and last digits into a single value
             (y.first().unwrap() * 10) + y.last().unwrap()
         })
         .collect::<Vec<i32>>()
@@ -50,18 +62,17 @@ fn day1(lines: &[String], part2: bool) -> i32 {
         .sum()
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
-    fn part1(){
+    fn part1() {
         let input = ["ab1bc4jas2five".to_string()];
         assert_eq!(day1(&input, false), 12);
     }
 
     #[test]
-    fn part2(){
+    fn part2() {
         let input = ["ab1bc4jas2five".to_string()];
         assert_eq!(day1(&input, true), 15);
     }
