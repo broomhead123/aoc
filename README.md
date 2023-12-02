@@ -3,12 +3,12 @@
 
 ## Check
 
-`ls day* -d | xargs -I {} bash -c "cd '{}' && cargo clippy -- -W clippy::pedantic"`
+`make check`
 
 ## Run:
 
- `ls day* -d | xargs -I {} bash -c "cd '{}' && cargo run --release"`
+`make run`
 
 ## Tests:
 
-`ls day* -d | xargs -I {} bash -c "cd '{}' && cargo test"`
+`make test`
