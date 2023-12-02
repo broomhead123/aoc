@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Check
+      run:  ls day* -d | xargs -I {} bash -c "cd '{}' && cargo clippy -- -W clippy::pedantic"
     - name: Build
       run:  ls day* -d | xargs -I {} bash -c "cd '{}' && cargo run"
     - name: Run tests
