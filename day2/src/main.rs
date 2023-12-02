@@ -1,19 +1,19 @@
 use regex::Regex;
+use std::time::Instant;
 
 fn main() {
     let file = include_str!("../input.data");
-    let lines: Vec<String> = file.lines().map(|s| s.to_string()).collect();
-    use std::time::Instant;
+    let lines: Vec<String> = file.lines().map(std::string::ToString::to_string).collect();
     {
         let now = Instant::now();
         let total_part1: i32 = day2(&lines);
-        println!("Part 1 {}", total_part1);
+        println!("Part 1 {total_part1}");
         println!("Done in: {:.2?}", now.elapsed());
     }
     {
         let now = Instant::now();
         let total_part2 = day2part2(&lines);
-        println!("Part 2 {}", total_part2);
+        println!("Part 2 {total_part2}");
         println!("Done in: {:.2?}", now.elapsed());
     }
 }
