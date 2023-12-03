@@ -12,7 +12,7 @@ check_$1: $1
 
 run_$1: $1
 	@echo "Running $$@..."
-	cargo run --manifest-path $$^/Cargo.toml
+	cargo run --release --manifest-path $$^/Cargo.toml
 
 test_$1: $1
 	@echo "Testing $$@..."
