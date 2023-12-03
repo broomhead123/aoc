@@ -12,3 +12,7 @@
 ## Tests:
 
 `make test`
+
+# Make single day
+
+`make rule_dayN`
