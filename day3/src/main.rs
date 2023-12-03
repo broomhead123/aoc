@@ -26,31 +26,34 @@ fn get_num_positions(lines: &[String]) -> Vec<Vec<NumPos>> {
     let num_pos = lines
         .iter()
         .map(|line| {
-            let mut num = String::new();
+            let mut num: i32 = 0;
+            let mut start_pos: usize = 0;
             let mut nums: Vec<NumPos> = vec![];
             let _ = line
                 .chars()
                 .enumerate()
                 .map(|(i, c)| {
                     match c.to_string().parse::<i32>() {
-                        Ok(c) => num += &c.to_string(),
+                        Ok(c) => {if num == 0 {start_pos = i}; num = num*10 + c},
                         Err(_) => {
-                            if !num.is_empty() {
+                            if num != 0 {
+                                let len: usize = i - start_pos;
                                 nums.push(NumPos {
-                                    column: (i - num.len()).try_into().unwrap(),
-                                    length: num.len().try_into().unwrap(),
-                                    num: num.parse::<i32>().unwrap(),
+                                    column: (i - len).try_into().unwrap(),
+                                    length: len.try_into().unwrap(),
+                                    num,
                                 });
-                                num = String::new();
+                                num = 0;
                             }
                         }
                     };
-
-                    if i == line.len() - 1 && !num.is_empty() {
+                    // Reached the end of the line, may have been parsing a number so finish that
+                    if i == line.len() - 1 && num != 0 {
+                        let len: usize = (num.checked_ilog10().unwrap_or(0) + 1).try_into().unwrap();
                         nums.push(NumPos {
-                            column: (i - num.len() + 1).try_into().unwrap(),
-                            length: num.len().try_into().unwrap(),
-                            num: num.parse::<i32>().unwrap(),
+                            column: (i - len + 1).try_into().unwrap(),
+                            length: len.try_into().unwrap(),
+                            num,
                         });
                     }
                 })
@@ -69,6 +72,22 @@ fn find_nums(numpos: &[Vec<NumPos>], index: usize, i: i32) -> Vec<i32> {
         .collect::<Vec<_>>()
 }
 
+fn get_nums_for_index(index: usize, numpos: &[Vec<NumPos>], i: i32, a: &mut Vec<i32>, lines: &[String]) {
+    if index == 0 {
+        let mut b = find_nums(numpos, index + 1, i);
+        a.append(&mut b);
+    } else if index == lines.len() - 1 {
+        let mut c = find_nums(numpos, index - 1, i);
+        a.append(&mut c);
+    } else {
+        let mut b = find_nums(numpos, index - 1, i);
+        let mut c = find_nums(numpos, index + 1, i);
+        a.append(&mut b);
+        a.append(&mut c);
+    }
+}
+
+
 fn day3(lines: &[String]) -> i32 {
     let numpos = get_num_positions(lines);
 
@@ -82,24 +101,16 @@ fn day3(lines: &[String]) -> i32 {
                     let i: i32 = ix.try_into().unwrap();
                     match ch {
                         '*' | '#' | '$' | '+' | '%' | '=' | '-' | '&' | '@' | '/' => {
-                            let a:i32 = find_nums(&numpos, index, i).iter().sum();
-                            if index == 0 {
-                                let c: i32 = find_nums(&numpos, index + 1, i).iter().sum();
-                                a + c
-                            } else if index == lines.len() - 1 {
-                                let c: i32 = find_nums(&numpos, index - 1, i).iter().sum();
-                                a + c
-                            } else {
-                                let b: i32 = find_nums(&numpos, index - 1, i).iter().sum();
-                                let c: i32 = find_nums(&numpos, index + 1, i).iter().sum();
-                                a + b + c
-                            }
+                            let mut a: Vec<i32> = find_nums(&numpos, index, i);
+                            get_nums_for_index(index, &numpos, i, &mut a, lines);
+                            Some(a.iter().sum::<i32>())
                         }
-                        _ => 0,
+                        _ => None,
                     }
                 })
                 .collect::<Vec<_>>()
                 .iter()
+                .filter_map(|&x| x)
                 .sum()
         })
         .collect::<Vec<_>>()
@@ -121,32 +132,21 @@ fn day3part2(lines: &[String]) -> i32 {
                     match ch {
                         '*' => {
                             let mut a: Vec<i32> = find_nums(&numpos, index, i);
-                            if index == 0 {
-                                let mut b = find_nums(&numpos, index + 1, i);
-                                a.append(&mut b);
-
-                            } else if index == lines.len() - 1 {
-                                let mut c = find_nums(&numpos, index - 1, i);
-                                a.append(&mut c);
-                            } else {
-                                let mut b = find_nums(&numpos, index - 1, i);
-                                let mut c = find_nums(&numpos, index + 1, i);
-                                a.append(&mut b);
-                                a.append(&mut c);
-
-                            }
-                            a.retain(|x: &i32| *x != 0);
+                            get_nums_for_index(index, &numpos, i, &mut a, lines);
+                            // Any '*' with 2 nums is a gear so calculate
+                            // gear ratio
                             if ch == '*' && a.len() == 2 {
-                                a[0] * a[1]
+                                Some(a[0] * a[1])
                             } else {
-                                0
+                                None
                             }
                         }
-                        _ => 0,
+                        _ => None,
                     }
                 })
                 .collect::<Vec<_>>()
                 .iter()
+                .filter_map(|&x| x)
                 .sum()
         })
         .collect::<Vec<_>>()
