@@ -30,7 +30,7 @@ fn day4(lines: &[String], win_nums: usize) -> i64 {
         .map(|line| {
             let num_wins = calculate_line_win(line, win_nums);
             if num_wins > 0 {
-                2_i64.pow(num_wins as u32 - 1)
+                2_i64.pow(u32::try_from(num_wins).unwrap() - 1)
             } else {
                 0
             }
@@ -65,7 +65,7 @@ fn day4_hash(lines: &[String]) -> i64 {
             let num_wins: i64 =
                 i64::try_from(winning_numbers.intersection(&num_to_check).count()).unwrap();
             if num_wins > 0 {
-                2_i64.pow(num_wins as u32 - 1)
+                2_i64.pow(u32::try_from(num_wins).unwrap() - 1)
             } else {
                 0
             }
@@ -97,7 +97,7 @@ fn day4part2(lines: &[String], win_nums: usize) -> i64 {
     for i in 0..scratch_cards.len() {
         let card = scratch_cards[i].clone();
         if card.matches != 0 {
-            for s in scratch_cards[i + 1..=min(i + card.matches as usize, len)].iter_mut() {
+            for s in &mut scratch_cards[i + 1..=min(i + usize::try_from(card.matches).unwrap(), len)] {
                 s.copies += card.copies;
             }
         }
@@ -110,7 +110,7 @@ fn day4part2(lines: &[String], win_nums: usize) -> i64 {
         .sum::<i64>()
 }
 
-fn calculate_line_win(line: &String, win_nums: usize) -> i64 {
+fn calculate_line_win(line: &str, win_nums: usize) -> i64 {
     let binding = line.split(':').collect::<Vec<_>>();
     let l = binding.last().unwrap();
     let winning_numbers = l
