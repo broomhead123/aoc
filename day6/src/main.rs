@@ -37,16 +37,18 @@ fn day6(lines: &mut [String], part2: bool) -> u64 {
 
     let races = times.iter().zip(distances.iter());
 
-    let res = races
-        .map(|(t, d)| {
-            (1..*t)
-                .filter(|i| i * (t - i) > *d)
+    races
+        .map(|(t, d)| -> u64 {
+            //Iterator until first 'win' and double it for number of losses
+            let x = (0..*t)
+                .take_while(|i| i * (t - i) <= *d)
                 .collect::<Vec<_>>()
                 .len()
+                * 2;
+            // Calculate wins from losses
+            *t + 1 - x as u64
         })
-        .product::<usize>();
-
-    res.try_into().unwrap()
+        .product::<u64>()
 }
 
 #[cfg(test)]
