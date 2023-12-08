@@ -83,54 +83,56 @@ fn day7part2(lines: &[String]) -> u64 {
 
 fn sort_hands(hands: &mut [(String, u64, &str)], order: &str) {
     hands.sort_by_key(|h| {
-        //Five of a kind
+        // Sorted cards as chars
         let c: Vec<char> = h.0.chars().collect();
+        // Get orig cards order as vector of card order to compare with when ranks match
         let hs: Vec<usize> = h.2.chars().map(|c| order.find(c).unwrap()).collect();
+        //Five of a kind
         if c[0] == c[4] {
-            return (9, hs, 0);
+            return (9, hs);
         }
         //Four of a kind
         if c[0] == c[3] || c[1] == c[4] {
-            return (8, hs, 0);
+            return (8, hs);
         }
         //Full house
         if (c[0] == c[2] && c[3] == c[4]) || (c[2] == c[4] && c[0] == c[1]) {
-            return (7, hs, 0);
+            return (7, hs);
         }
         //Three of a kind
         if c[0] == c[2] || c[1] == c[3] || c[2] == c[4] {
-            return (6, hs, 0);
+            return (6, hs);
         }
         // Two pairs
         if c[0] == c[1] && (c[2] == c[3] || c[3] == c[4])
             || (c[1] == c[2] || c[0] == c[1]) && c[3] == c[4]
         {
-            return (5, hs, 0);
+            return (5, hs);
         }
         // One pair
         if c[0] == c[1] || c[1] == c[2] || c[2] == c[3] || c[3] == c[4] {
-            return (4, hs, 0);
+            return (4, hs);
         }
         // High card
-        (0, hs, order.find(c[4]).unwrap())
+        (0, hs)
     });
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    // Extended test.data from reddit instead of the usual small one from the puzzle
     #[test]
     fn part1() {
         let file = include_str!("../test.data");
         let lines: Vec<String> = file.lines().map(std::string::ToString::to_string).collect();
-        assert_eq!(day7(&lines), 6440);
+        assert_eq!(day7(&lines), 6592);
     }
 
     #[test]
     fn part2() {
         let file = include_str!("../test.data");
         let lines: Vec<String> = file.lines().map(std::string::ToString::to_string).collect();
-        assert_eq!(day7part2(&lines), 5905);
+        assert_eq!(day7part2(&lines), 6839);
     }
 }
