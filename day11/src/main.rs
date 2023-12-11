@@ -24,50 +24,37 @@ struct Galaxy {
 }
 
 fn day11(lines: &[String], expansion_size: i64) -> i64 {
+    let better_lines: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
     // Add extra lines
-    let y_space: Vec<_> = lines
-        .iter()
-        .enumerate()
-        .map(|(index, line): (usize, &String)| {
-            if line.chars().all(|f| f == '.') {
-                index as i64
-            } else {
-                -1
-            }
-        })
-        .filter(|x| x >= &0)
-        .collect();
-
-    let transposed: Vec<Vec<_>> = (0..lines[0].len())
-        .map(|col| {
-            (0..lines.len())
-                .map(|row| lines[row].chars().collect::<Vec<_>>()[col])
-                .collect()
-        })
-        .collect();
-    let x_space: Vec<_> = transposed
+    let y_space: Vec<_> = better_lines
         .iter()
         .enumerate()
         .map(|(index, line)| {
             if line.iter().all(|f| *f == '.') {
-                index as i64
+                i64::try_from(index).unwrap()
             } else {
                 -1
             }
         })
         .filter(|x| x >= &0)
         .collect();
+    let mut x_space = vec![];
+    (0..better_lines[0].len()).for_each(|i| {
+        if better_lines.iter().map(|l| l[i]).all(|c| c == '.') {
+            x_space.push(i64::try_from(i).unwrap());
+        }
+    });
 
-    let galaxies: Vec<Galaxy> = lines
+    let galaxies: Vec<Galaxy> = better_lines
         .iter()
         .enumerate()
         .flat_map(|(index, line)| {
-            line.chars()
+            line.iter()
                 .enumerate()
-                .filter(|x| x.1 == '#')
+                .filter(|x| *x.1 == '#')
                 .map(|(offset, _char)| Galaxy {
-                    y: (index) as i64,
-                    x: (offset) as i64,
+                    y: i64::try_from(index).unwrap(),
+                    x: i64::try_from(offset).unwrap(),
                 })
                 .collect::<Vec<Galaxy>>()
         })
@@ -80,29 +67,34 @@ fn day11(lines: &[String], expansion_size: i64) -> i64 {
             galaxies[i + 1..]
                 .iter()
                 .map(|g2| {
-                    let x_count = x_space
+                    let x_count = i64::try_from(x_space
                         .iter()
                         .filter(|x| {
                             if g.x > g2.x {
-                                (g2.x..=g.x).contains(x)
+                                **x >= g2.x && **x <= g.x
                             } else {
-                                (g.x..=g2.x).contains(x)
+                                **x >= g.x && **x <= g2.x
                             }
                         })
-                        .count() as i64;
-                    let y_count =
-                        y_space.iter().filter(|y| {if g.y > g2.y {
-                            (g2.y..=g.y).contains(y)
-                        } else {
-                            (g.y..=g2.y).contains(y)
-                        }}).count() as i64;
+                        .count()).unwrap();
+                    let y_count = i64::try_from(y_space
+                        .iter()
+                        .filter(|y| {
+                            if g.y > g2.y {
+                                **y >= g2.y && **y <= g.y
+                            } else {
+                                **y >= g.y && **y <= g2.y
+                            }
+                        })
+                        .count()).unwrap();
 
-                    (g2.x - g.x).abs() + x_count * expansion_size - x_count
-                    + (g2.y - g.y).abs()
-                    + y_count * expansion_size
-                    - y_count
+                    (g2.x - g.x).abs() + x_count * expansion_size
+                        - x_count
+                        + (g2.y - g.y).abs()
+                        + y_count * expansion_size
+                        - y_count
                 })
-                .collect::<Vec<_>>()
+                .collect::<Vec<i64>>()
         })
         .collect();
     distances.iter().sum::<i64>()
