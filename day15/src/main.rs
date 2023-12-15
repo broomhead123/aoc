@@ -18,7 +18,7 @@ fn main() {
 }
 
 fn day14(lines: &[String]) -> i64 {
-    lines[0].split(',').map(hash_str).sum()
+    lines[0].split(',').map(|s| hash_str(s.as_bytes())).sum()
 }
 
 fn day14part2(lines: &[String]) -> i64 {
@@ -26,19 +26,23 @@ fn day14part2(lines: &[String]) -> i64 {
     let _ = lines[0]
         .split(',')
         .map(|s| {
-            let split = s.split(|c| c == '-' || c == '=').collect::<Vec<_>>();
-            let label = split[0];
-            let focal_length = split[1].parse::<i64>();
+            let mut focal_length:Option<i64> = None;
 
-            let hash = usize::try_from(hash_str(label)).unwrap();
-            let exists = boxes[hash as usize].iter().any(|x| x.0 == label);
+            let label = if &s[s.len()-1..] == "-" {
+                &s[0..s.len()-1]
+            } else {
+                focal_length = Some(s[s.len() - 1..].parse::<i64>().unwrap());
+                &s[0..s.len() - 2]
+            };
+
+            let hash = usize::try_from(hash_str(label.as_bytes())).unwrap();
             let pos = boxes[hash].iter().position(|x| x.0 == label);
-            if focal_length.is_err() {
-                if exists {
-                    boxes[hash].remove(pos.unwrap());
+            if focal_length.is_none() {
+                if let Some(pos) = pos {
+                    boxes[hash].remove(pos);
                     boxes[hash as usize].retain(|x| !x.0.is_empty());
                 }
-            } else if exists {
+            } else if pos.is_some() {
                 let pos = pos.unwrap();
                 boxes[hash][pos] = (label, focal_length.unwrap());
             } else {
@@ -61,12 +65,15 @@ fn day14part2(lines: &[String]) -> i64 {
     .unwrap()
 }
 
-fn hash_str(label: &str) -> i64 {
-    let mut hash = 0;
-    for c in label.chars() {
-        hash += c as i64;
+fn hash_str(label: &[u8]) -> i64 {
+    let mut hash: i64 = 0;
+    let len = label.len();
+    let mut i = 0;
+    while i < len {
+        hash += i64::from(label[i]);
         hash *= 17;
         hash %= 256;
+        i += 1;
     }
     hash
 }
@@ -77,7 +84,7 @@ mod tests {
 
     #[test]
     fn part1hash() {
-        assert_eq!(hash_str("HASH"), 52);
+        assert_eq!(hash_str("HASH".as_bytes()), 52);
     }
 
     #[test]
